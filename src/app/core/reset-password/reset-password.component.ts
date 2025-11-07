@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { HttpClient } from '@angular/common/http';
+import { AuthService } from '../service/auth.service';
 
 @Component({
   selector: 'app-reset-password',
@@ -12,30 +12,25 @@ export class ResetPasswordComponent {
   message: string = '';
   token: string = '';
 
-  constructor(private route: ActivatedRoute, private http: HttpClient) {
-    // Get token from URL param
-    this.token = this.route.snapshot.paramMap.get('token') || '';
-  }
+  constructor(private route: ActivatedRoute, private authService: AuthService) { }
 
+  ngOnInit():void{
+    this.token=this.route.snapshot.paramMap.get('token')||'';
+  }
   onSubmit() {
     if (!this.password) {
       this.message = 'Please enter a new password.';
       return;
     }
 
-    this.http
-      .post<any>(
-        `http://localhost:5000/api/auth/reset-password/${this.token}`,
-        { password: this.password }
-      )
-      .subscribe({
-        next: (res) => {
-          this.message = res.message || 'Password reset successfully!';
-          this.password = '';
-        },
-        error: () => {
-          this.message = 'Error resetting password.';
-        }
-      });
+    this.authService.resetPassword(this.token,this.password).subscribe({
+      next:(res)=>{
+        this.message=res.message||'Password reset successfully.';
+      },
+      error:(err)=>{
+        this.message=err.error.message||'Error resetting password.';
+      }
+    })
+      
   }
 }

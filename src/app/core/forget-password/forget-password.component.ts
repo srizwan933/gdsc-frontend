@@ -1,5 +1,7 @@
 import { Component } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { AuthService } from '../service/auth.service';
+
 
 @Component({
   selector: 'app-forgot-password',
@@ -10,13 +12,21 @@ export class ForgotPasswordComponent {
   email = '';
   message = '';
 
-  constructor(private http: HttpClient) {}
+  constructor(private authservice:AuthService) {}
 
   onSubmit() {
-    this.http.post<any>('http://localhost:5000/api/auth/forgot-password', { email: this.email })
-      .subscribe({
-        next: (res) => this.message = res.message,
-        error: (err) => this.message = 'Error sending reset email.'
-      });
+    if(! this.email){
+      this.message='Please enter your email.';
+      return;
+    }
+    this.authservice.forgotPassword(this.email).subscribe({
+  next:(res)=>{
+    this.message=res.message||'PAssword reset link send to your mail.';
+  },
+  error:(err)=>{
+    this.message=err.error.message||'Error sending reset link.';
+  }
+})
   }
 }
+
